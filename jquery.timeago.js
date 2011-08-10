@@ -39,6 +39,8 @@
         minutes: "%d minutes",
         hour: "about an hour",
         hours: "about %d hours",
+        week: "a week",
+        weeks: "%d weeks",
         day: "a day",
         days: "%d days",
         month: "about a month",
@@ -78,7 +80,9 @@
         minutes < 90 && substitute($l.hour, 1) ||
         hours < 24 && substitute($l.hours, Math.round(hours)) ||
         hours < 48 && substitute($l.day, 1) ||
-        days < 30 && substitute($l.days, Math.floor(days)) ||
+        days < 7 && substitute($l.days, Math.floor(days)) ||
+        days < 14 && substitute($l.week, 1) ||
+        days < 30 && substitute($l.weeks, Math.floor(days / 7)) ||
         days < 60 && substitute($l.month, 1) ||
         days < 365 && substitute($l.months, Math.floor(days / 30)) ||
         years < 2 && substitute($l.year, 1) ||
