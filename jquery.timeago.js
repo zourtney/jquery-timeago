@@ -50,6 +50,28 @@
         numbers: []
       }
     },
+    settingsRelativeDay: {
+      allowFuture: true,
+      strings: {
+        suffixAgo: {
+          default: "ago",
+          day: ""
+        },
+        suffixFromNow: {
+          default: "from now",
+          day: ""
+        },
+        day: function(num, millis, isFuture) {
+          if (millis.day == 0) {
+            return "today";
+          }
+          if (isFuture) {
+            return "tomorrow";
+          }
+          return "yesterday";
+        }
+      }
+    },
     inWords: function(distanceMillis) {
       var $l = this.settings.strings;
       var prefix = $l.prefixAgo;
@@ -124,8 +146,9 @@
     }
   });
 
-  $.fn.timeago = function() {
+  $.fn.timeago = function(settings) {
     var self = this;
+    $t.settings = $.extend(true, {}, $t.settings, settings);
     self.each(refresh);
 
     var $s = $t.settings;
