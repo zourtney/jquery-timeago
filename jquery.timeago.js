@@ -54,8 +54,9 @@
       var $l = this.settings.strings;
       var prefix = $l.prefixAgo;
       var suffix = $l.suffixAgo;
+      var isFuture = (distanceMillis.absolute < 0)
       if (this.settings.allowFuture) {
-        if (distanceMillis.absolute < 0) {
+        if (isFuture) {
           prefix = $l.prefixFromNow;
           suffix = $l.suffixFromNow;
         }
@@ -69,17 +70,35 @@
       var days = distanceMillis.day / 86400000; // 1000 / 60 / 60 / 24
       var years = days / 365;
       
+      function getSurroundingWords(prefixOrSuffix, stringOrFunction) {
+        if (! prefixOrSuffix || typeof prefixOrSuffix === "string") {
+          return prefixOrSuffix;
+        }
+        
+        for (var i in $l) {
+          if ($l[i] == stringOrFunction ) {
+            return prefixOrSuffix[(prefixOrSuffix.hasOwnProperty(i)) ? i : "default"];
+          }
+        }
+        return "";
+      }
+      
       function substitute(stringOrFunction, number) {
-        var string = $.isFunction(stringOrFunction) ? stringOrFunction(number, distanceMillis) : stringOrFunction;
+        var string = $.isFunction(stringOrFunction) ? stringOrFunction(number, distanceMillis, isFuture) : stringOrFunction;
         var value = ($l.numbers && $l.numbers[number]) || number;
-        return string.replace(/%d/i, value);
+        var words = string.replace(/%d/i, value);
+        return $.trim([
+          getSurroundingWords(prefix, stringOrFunction),
+          words,
+          getSurroundingWords(suffix, stringOrFunction)
+        ].join(" "));
       }
 
-      var words = seconds < 45 && substitute($l.seconds, Math.round(seconds)) ||
+      return seconds < 45 && substitute($l.seconds, Math.round(seconds)) ||
         seconds < 90 && substitute($l.minute, 1) ||
         minutes < 45 && substitute($l.minutes, Math.round(minutes)) ||
         minutes < 90 && substitute($l.hour, 1) ||
-        hours < 24 && substitute($l.hours, Math.round(hours)) ||
+        hours < 12 && substitute($l.hours, Math.round(hours)) ||
         days < 2 && substitute($l.day, 1) ||
         days < 7 && substitute($l.days, Math.floor(days)) ||
         days < 14 && substitute($l.week, 1) ||
@@ -88,8 +107,6 @@
         days < 365 && substitute($l.months, Math.floor(days / 30)) ||
         years < 2 && substitute($l.year, 1) ||
         substitute($l.years, Math.floor(years));
-
-      return $.trim([prefix, words, suffix].join(" "));
     },
     parse: function(iso8601) {
       var s = $.trim(iso8601);
