@@ -55,19 +55,20 @@
       var prefix = $l.prefixAgo;
       var suffix = $l.suffixAgo;
       if (this.settings.allowFuture) {
-        if (distanceMillis < 0) {
+        if (distanceMillis.absolute < 0) {
           prefix = $l.prefixFromNow;
           suffix = $l.suffixFromNow;
         }
-        distanceMillis = Math.abs(distanceMillis);
+        distanceMillis.absolute = Math.abs(distanceMillis.absolute);
+        distanceMillis.day = Math.abs(distanceMillis.day);
       }
 
-      var seconds = distanceMillis / 1000;
+      var seconds = distanceMillis.absolute / 1000;
       var minutes = seconds / 60;
-      var hours = minutes / 60;
-      var days = hours / 24;
+      var hours =  minutes / 60;
+      var days = distanceMillis.day / 86400000; // 1000 / 60 / 60 / 24
       var years = days / 365;
-
+      
       function substitute(stringOrFunction, number) {
         var string = $.isFunction(stringOrFunction) ? stringOrFunction(number, distanceMillis) : stringOrFunction;
         var value = ($l.numbers && $l.numbers[number]) || number;
@@ -79,7 +80,7 @@
         minutes < 45 && substitute($l.minutes, Math.round(minutes)) ||
         minutes < 90 && substitute($l.hour, 1) ||
         hours < 24 && substitute($l.hours, Math.round(hours)) ||
-        hours < 48 && substitute($l.day, 1) ||
+        days < 2 && substitute($l.day, 1) ||
         days < 7 && substitute($l.days, Math.floor(days)) ||
         days < 14 && substitute($l.week, 1) ||
         days < 30 && substitute($l.weeks, Math.floor(days / 7)) ||
@@ -142,7 +143,19 @@
   }
 
   function distance(date) {
-    return (new Date().getTime() - date.getTime());
+    var now = new Date();
+    
+    // Get midnight times (missing time params default to 0)
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    // Return object with two values:
+    //   `absolute`: number of milliseconds between date/times
+    //   `day`: number of milliseconds between days
+    return {
+      absolute: (now.getTime() - date.getTime()),
+      day: (today.getTime() - dateDay.getTime())
+    };
   }
 
   // fix for IE6 suckage
