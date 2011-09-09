@@ -54,11 +54,11 @@
       allowFuture: true,
       strings: {
         suffixAgo: {
-          default: "ago",
+          defaultValue: "ago",
           day: ""
         },
         suffixFromNow: {
-          default: "from now",
+          defaultValue: "from now",
           day: ""
         },
         day: function(num, millis, isFuture) {
@@ -99,7 +99,7 @@
         
         for (var i in $l) {
           if ($l[i] == stringOrFunction ) {
-            return prefixOrSuffix[(prefixOrSuffix.hasOwnProperty(i)) ? i : "default"];
+            return prefixOrSuffix[(prefixOrSuffix.hasOwnProperty(i)) ? i : "defaultValue"];
           }
         }
         return "";
